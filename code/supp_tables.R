@@ -17,54 +17,6 @@ if (!dir.exists(tab_path)) dir.create(tab_path, recursive = T)
 
 
 # STable 1 ----------------------------------------------------------------
-tjunction |> 
-  group_by(Grupo, Reinjury) |> 
-  summarise(N = n(),
-            `Mean (RTP)` = mean(RTP),
-            `Median (RTP)` = median(RTP),
-            `IQR (RTP)` = quantile(RTP, 0.75) - quantile(RTP, 0.25)) |> 
-  pivot_wider(names_from = Grupo)
-tjunction |> 
-  group_by(Grupo) |> 
-  shapiro_test(RTP)
-kruskal_test(data = tjunction, RTP ~ Grupo)
-
-
-tjunction |> 
-  filter(Reinjury == "Yes") |> 
-  group_by(Grupo) |> 
-  shapiro_test(RTP)
-anova_test(tjunction |> filter(Reinjury == "Yes"), RTP ~ Grupo)
-tjunction |> 
-  filter(Reinjury == "No") |> 
-  group_by(Grupo) |> 
-  shapiro_test(RTP)
-kruskal_test(tjunction |> filter(Reinjury == "No"), RTP ~ Grupo)
-
-tjunction |> 
-  summarise(N = n(),
-            `Mean (RTP)` = mean(RTP),
-            `Median (RTP)` = median(RTP),
-            `IQR (RTP)` = quantile(RTP, 0.75) - quantile(RTP, 0.25),
-            .by = c(Grupo, Type_injury_letter))
-tjunction |> 
-  filter(Type_injury_letter == "A") |> 
-  group_by(Grupo) |> 
-  shapiro_test(RTP)
-anova_test(tjunction |> filter(Type_injury_letter == "A"), RTP ~ Grupo)
-tjunction |> 
-  filter(Type_injury_letter == "AB") |> 
-  group_by(Grupo) |> 
-  shapiro_test(RTP)
-anova_test(tjunction |> filter(Type_injury_letter == "AB"), RTP ~ Grupo)
-tjunction |> 
-  filter(Type_injury_letter == "B") |> 
-  group_by(Grupo) |> 
-  shapiro_test(RTP)
-kruskal_test(tjunction |> filter(Type_injury_letter == "B"), RTP ~ Grupo)
-
-# STable 2 ----------------------------------------------------------------
-
 ## Multivariate model
 boxplot(tjunction$RTP)
 hist(tjunction$RTP)
@@ -161,5 +113,95 @@ tab_model(mod2_nb,
           file = paste0(tab_path, "Supp_Tab1.html"))
 
 
+# STable 2 ----------------------------------------------------------------
+my_descrGroup <- function(data, comp_var = NULL) {
+  data |> 
+    group_by(Grupo, {{comp_var}}) |> 
+    summarise(N = n(),
+              `Mean (RTP)` = round(mean(RTP), 1),
+              `Median (RTP)` = median(RTP),
+              `Median (RTP)` = paste0(`Median (RTP)`, " (", quantile(RTP, 0.75) - quantile(RTP, 0.25), ")")) |> ## with IQR
+    ungroup() |> 
+    pivot_wider(id_cols = {{comp_var}},
+                names_from = Grupo,
+                values_from = c("N", "Mean (RTP)", "Median (RTP)")) |> 
+    dplyr::select({{comp_var}}, ends_with("_Group 1"), ends_with("_Group 2"), ends_with("Group 3"))
+}
 
+## total
+stab2_1 <- my_descrGroup(tjunction) |> 
+  mutate(Variable = "RTP Total") |> 
+  dplyr::select(Variable, everything())
+tjunction |> 
+  group_by(Grupo) |> 
+  shapiro_test(RTP)
+kruskal_test(data = tjunction, RTP ~ Grupo)
+stab2_1 <- stab2_1 |> 
+  mutate(p_value = round(kruskal_test(data = tjunction, RTP ~ Grupo)$p, 3))
+
+## reinjury
+stab2_2 <- my_descrGroup(tjunction, Reinjury) |> 
+  rename(Variable = "Reinjury")
+tjunction |> 
+  filter(Reinjury == "Yes") |> 
+  group_by(Grupo) |> 
+  shapiro_test(RTP)
+anova_test(tjunction |> filter(Reinjury == "Yes"), RTP ~ Grupo)
+tjunction |> 
+  filter(Reinjury == "No") |> 
+  group_by(Grupo) |> 
+  shapiro_test(RTP)
+kruskal_test(tjunction |> filter(Reinjury == "No"), RTP ~ Grupo)
+stab2_2 <- stab2_2 |> 
+  mutate(p_value = c(
+    round(anova_test(data = tjunction |> dplyr::filter(Reinjury == "Yes"), 
+                       RTP ~ Grupo)$p, 3),
+    round(kruskal_test(data = tjunction |> dplyr::filter(Reinjury == "No"), 
+                                      RTP ~ Grupo)$p, 3)
+    )
+    )
+
+## type of injury
+stab2_3 <- my_descrGroup(tjunction, Type_injury_letter) |> 
+  rename(Variable = "Type_injury_letter")
+tjunction |> 
+  filter(Type_injury_letter == "A") |> 
+  group_by(Grupo) |> 
+  shapiro_test(RTP)
+anova_test(tjunction |> filter(Type_injury_letter == "A"), RTP ~ Grupo)
+tjunction |> 
+  filter(Type_injury_letter == "AB") |> 
+  group_by(Grupo) |> 
+  shapiro_test(RTP)
+anova_test(tjunction |> filter(Type_injury_letter == "AB"), RTP ~ Grupo)
+tjunction |> 
+  filter(Type_injury_letter == "B") |> 
+  group_by(Grupo) |> 
+  shapiro_test(RTP)
+kruskal_test(tjunction |> filter(Type_injury_letter == "B"), RTP ~ Grupo)
+stab2_3 <- stab2_3 |> 
+  mutate(p_value = c(
+    round(anova_test(data = tjunction |> dplyr::filter(Type_injury_letter == "A"), 
+                     RTP ~ Grupo)$p, 3),
+    round(anova_test(data = tjunction |> dplyr::filter(Type_injury_letter == "AB"), 
+                     RTP ~ Grupo)$p, 3),
+    round(kruskal_test(data = tjunction |> dplyr::filter(Type_injury_letter == "B"), 
+                       RTP ~ Grupo)$p, 3)
+  )
+  )
+
+
+## combine these tables
+stable2 <- bind_rows(stab2_1,
+                     stab2_2,
+                     stab2_3) |> 
+  flextable() |> 
+  fontsize(size = 8, part = "all") |> 
+  set_caption("Supplementary table 2: Comparative data across the three cohorts within the institutional network.")
+
+## Save to Word document
+doc <- read_docx() |>
+  body_add_flextable(stable2) 
+
+print(doc, target = paste0(tab_path, "Supp_Table2.docx"))
 
