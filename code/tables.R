@@ -15,8 +15,7 @@ library(rstatix)
 ## load data and functions
 tjunction <- readRDS("path_to_the_data")  ## DATA NOT AVAILABLE
 n_distinct(tjunction$Type_injury) ## 23
-dim(tjunction) ## 177 23
-source("code/functions.R", echo = TRUE)
+dim(tjunction) ## 162 17
 
 ## set paths
 tab_path <- "results/tables/"
@@ -78,7 +77,7 @@ final_table <- rbind(tab_participant, tab_injury)
 ##  generate the final (flextable) Word table
 ft <- flextable(final_table) |>
   # Header formatting
-  set_header_labels(Variable = "Variable", Total = "Total (N = 164)") |>
+  set_header_labels(Variable = "Variable", Total = "Total (N = 162)") |>
   # Bold for section headers
   bold(i = ~ Variable %in% c("Participant characteristics", "Injury Characteristics")) |>
   # Add background color to section headers
@@ -111,7 +110,7 @@ my_injuryDescr <- function(data, injury_var) {
   data |> 
     summarise(
       n_inj = n(),
-      N = paste0(n_inj, " (", round(n_inj/177*100, 1), ")"),
+      N = paste0(n_inj, " (", round(n_inj/162*100, 1), ")"), ##watch out 162! (this is very manual)
       Mean = round(mean(RTP), 1),
       Mean_CI = paste0(round(Mean - qt(0.975, n_inj - 1)*sd(RTP)/sqrt(n_inj), 1), " to ", round(Mean + qt(0.975, n_inj - 1)*sd(RTP)/sqrt(n_inj)), 1),
       Median = median(RTP),
@@ -136,7 +135,7 @@ tab2_2 <- my_injuryDescr(tjunction, "Type_injury3") |>
   rename(Injury = "Type_injury3")
 
 table2 <- bind_rows(tab2_0, tab2_1, tab2_2) |> 
-  slice(1, 4, 11, 8, 10, 7, 2, 5, 9, 3) |>  ## watch out (this is very manual)  
+  slice(1, 4, 9, 11, 8, 10, 3, 7, 6, 5) |>  ## watch out (this is very manual)  
   select(-Mean, -Mean_CI) |> 
   flextable() |> 
   set_caption("Table 2: Descriptive statistics regarding return-to-play in days.")
@@ -216,7 +215,7 @@ print(doc, target = paste0(tab_path, "Table3.docx"))
 tjunction |> 
   group_by(Type_injury3) |> 
   shapiro_test(RTP)
-## So: kruskal and wilcoxon
+## So: kruskal and mann-whitney
 
 # tjunction |> 
 #   mutate(Type_injury3 = factor(Type_injury3, 

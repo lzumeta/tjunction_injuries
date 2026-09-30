@@ -17,7 +17,7 @@ options(ggplot2.discrete.colour = mypalette)
 ## load data and functions
 tjunction <- readRDS("path_to_the_data")  ## DATA NOT AVAILABLE
 n_distinct(tjunction$Type_injury) ## 23
-dim(tjunction) ## 177
+dim(tjunction) ## 162
 
 ## set paths
 fig_path <- "results/figures/"
@@ -33,14 +33,16 @@ summary_stats <- tjunction |>
             median_rtp = median(RTP, na.rm = T),
             Q3 = quantile(RTP, 0.75, na.rm = T),
             IQR = Q3 - Q1,
+            Minn = min(RTP, na.rm = T),
+            Maxx = max(RTP, na.rm = T),
             .by = !!sym(comp_var)) |> 
   arrange(median_rtp)
 
 
 
-if (IQR) yylim  <- 45; 
+if (IQR) yylim  <- 58; 
 if (!IQR) yylim <- 18; 
-yymax <- max(tjunction[["RTP"]], na.rm = T) + 3
+yymax <- max(tjunction[["RTP"]], na.rm = T) + 10
 tjunction |> 
   mutate(!!sym(comp_var) := factor(!!sym(comp_var), levels = summary_stats[[comp_var]])) |> 
   ggplot(aes(x = !!sym(comp_var))) +
@@ -61,10 +63,13 @@ tjunction |>
               aes(x = !!sym(comp_var), y = yymax,
                   group = !!sym(comp_var),
                   label = paste0("N: ", round(n, 1),
-                                 "\nQ1: ", round(Q1, 1),
-                                 "\nMedian: ", round(median_rtp, 1),
+                                 "\nMax: ", round(Maxx, 1),
                                  "\nQ3: ", round(Q3, 1),
-                                 "\nIQR: ", round(IQR, 1))
+                                 "\nMedian: ", round(median_rtp, 1),
+                                 "\nIQR: ", round(IQR, 1),
+                                 "\nQ1: ", round(Q1, 1),
+                                 "\nMin: ", round(Minn, 1)
+                                 )
               ), 
               position = position_dodge(width = 0.8),
               size = 3, vjust = 0)
@@ -104,7 +109,7 @@ survminer::ggsurvplot(survobj, fun = "event", conf.int = T, palette= "jama",
 ggsave(filename = paste0(fig_path, "Figure4.tiff"), width =6.2, height = 3.6)
 
 # Figure 5 ----------------------------------------------------------------
-mod2_nb <- MASS::glm.nb(RTP ~ Grupo + Type_injury_letter + Cap_curt_biceps,
+mod2_nb <- MASS::glm.nb(RTP ~ Type_injury_letter + Cap_curt_biceps + Aponeurosis,
                   data = tjunction)
 
 mod2_nb_out <- tidy(mod2_nb) |> 
@@ -112,12 +117,11 @@ mod2_nb_out <- tidy(mod2_nb) |>
          ci_lower = exp(estimate - qnorm(0.975)*std.error),
          ci_upper = exp(estimate + qnorm(0.975)*std.error),
          term = recode(term,
-                       "GrupoGroup 2" = "Group 2 vs. 1",
-                       "GrupoGroup 3" = "Group 3 vs. 1",
                        "Type_injury_letterAB" = "Injury AB vs. A",
                        "Type_injury_letterB" = "Injury B vs. A",
-                       "ReinjuryYes" = "Reinjury Yes vs. No",
-                       "Cap_curt_bicepsYes" = "Short head biceps Yes vs. No"),
+                       "Cap_curt_bicepsYes" = "Short head biceps Yes vs. No",
+                       "AponeurosisLarga" = "Deep aponeurosis: Long vs. Short",
+                       "AponeurosisNon_detectable" = "Deep aponeurosis: Non detectable vs. Short"),
          mycol = factor(ifelse(exp_est_beta > 1, 1, -1)))
 
 mod2_nb_out |> 

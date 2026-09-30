@@ -18,7 +18,7 @@ options(ggplot2.discrete.colour = mypalette)
 ## load data and functions
 tjunction <- readRDS("path_to_the_data")  ## DATA NOT AVAILABLE
 n_distinct(tjunction$Type_injury) ## 23
-dim(tjunction) ## 177
+dim(tjunction) ## 162
 
 ## set paths
 fig_path <- "results/figures/"
@@ -48,7 +48,7 @@ tjunction |>
   coord_flip() +
   scale_y_continuous(expand = expansion(add = c(1, 17))) +
   labs(x = "Injury sublocation", y = "Number of injuries",
-       caption = "N~Total~ = 177") +
+       caption = "N~Total~ = 162") +
   theme(plot.caption = element_markdown(),
         axis.text.y = ggtext::element_markdown()) 
 ggsave(filename = paste0(fig_path, "Supp_Fig1.tiff"), width = 7.3, height = 5.3)
