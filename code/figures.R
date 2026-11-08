@@ -24,7 +24,7 @@ fig_path <- "results/figures/"
 if (!dir.exists(fig_path)) dir.create(fig_path, recursive = T)
 
 
-# Figure 3 ----------------------------------------------------------------
+# Figure 2 ----------------------------------------------------------------
 comp_var <- "Type_injury_letter"
 IQR = T
 summary_stats <- tjunction |> 
@@ -90,10 +90,10 @@ tjunction |>
   labs(x = "Injury location", y = "Days", 
        title = "Return-to-play") +
   theme(legend.position = "none")
-ggsave(filename = paste0(fig_path, "Figure3.tiff"), width = 9, height = 5.05)
+ggsave(filename = paste0(fig_path, "Figure2.tiff"), width = 9, height = 5.05)
 
 
-# Figure 4 ----------------------------------------------------------------
+# Figure 3 ----------------------------------------------------------------
 tjunction$status <- 1
 survobj <- survival::survfit(Surv(RTP, status) ~ Type_injury_letter, data = tjunction)
 summary(survobj)
@@ -106,9 +106,9 @@ survminer::ggsurvplot(survobj, fun = "event", conf.int = T, palette= "jama",
            legend = c(0.8, 0.2),
            legend.title = "",
            legend.labs = c("Injury location = A", "Injury location = AB", "Injury location = B"))
-ggsave(filename = paste0(fig_path, "Figure4.tiff"), width =6.2, height = 3.6)
+ggsave(filename = paste0(fig_path, "Figure3.tiff"), width =6.2, height = 3.6)
 
-# Figure 5 ----------------------------------------------------------------
+# Figure 4 ----------------------------------------------------------------
 mod2_nb <- MASS::glm.nb(RTP ~ Type_injury_letter + Cap_curt_biceps + Aponeurosis,
                   data = tjunction)
 
@@ -140,5 +140,5 @@ mod2_nb_out |>
         plot.title = element_text(size = rel(0.99)),
         plot.subtitle = element_text(size = rel(0.8)))
 
-ggsave(filename = paste0(fig_path, "Figure5.tiff"), width = 9, height = 5.5)
+ggsave(filename = paste0(fig_path, "Figure4.tiff"), width = 9, height = 5.5)
 
