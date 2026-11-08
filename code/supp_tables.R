@@ -16,17 +16,16 @@ tab_path <- "results/tables/"
 if (!dir.exists(tab_path)) dir.create(tab_path, recursive = T)
 
 
-# STable 1 ----------------------------------------------------------------
+# STable 2 ----------------------------------------------------------------
 ## Multivariate model
-boxplot(tjunction$RTP)
-hist(tjunction$RTP)
+boxplot(tjunction$RTP, main = "RTP distribution (boxplot)")
+hist(tjunction$RTP, main = "RTP distribution (histogram)")
 shapiro.test(tjunction$RTP)
 shapiro.test(tjunction$RTP)
 mean(tjunction$RTP); var(tjunction$RTP) ## Poisson GLM is not the best option "mean(var) != variance(var)"
 
 ## Search for best Poisson GLM model
 ##big formula:
-## - Type_injury_letter + EDAT + Cap_curt_biceps
 ## - Type_injury_letter + EDAT + Cap_curt_biceps + Position + Aponeurosis
 mod1_p <- glm(RTP ~ Type_injury_letter + EDAT + Cap_curt_biceps + Position + Aponeurosis,
               data = tjunction,
@@ -61,12 +60,8 @@ models <- list("Poisson BIG model" = mod1_p,
 res_gof <- lapply(models, function(model) {
   aic      <- AIC(model)
   bic      <- BIC(model)
-  deviance <- model$deviance
-  null_deviance <- model$null.deviance
-  dev_expl <- (null_deviance - deviance)/null_deviance * 100
   rmse     <- sqrt(sum((model$fitted.values - tjunction$RTP)^2)/nrow(tjunction))
-  r2_nagelkerke <- performance::r2_nagelkerke(model)[[1]]
-  return(res = data.frame(aic = aic, bic = bic, rmse = rmse, dev_expl = dev_expl, r2_nagelkerke = r2_nagelkerke))
+  return(res = data.frame(aic = aic, bic = bic, rmse = rmse))
 })
 
 res_gof |>   
@@ -78,9 +73,12 @@ res_gof |>
 mean(tjunction$RTP); var(tjunction$RTP)
 disp_ratio <- deviance(mod1_p) /df.residual(mod1_p)
 disp_ratio
+mod2_p <- glm(RTP ~ Type_injury_letter + Cap_curt_biceps + Aponeurosis,
+              data = tjunction,
+              family = poisson)
 # Under a true Poisson, the ratio of residual deviance to residual degrees of freedom should be near 1. Larger means overdispersion.
 pchisq(2 * (logLik(mod2_nb) - logLik(mod2_p)), df = 1, lower.tail = FALSE)
-# The p-value of the test turns out to be 1.102226e-169, which is significantly less than 0.05.
+# The p-value of the test turns out to be 3.233669e-122, which is significantly less than 0.05.
 # Thus, we would conclude that the negative binomial regression model offers a significantly better fit to the data compared to the Poisson regression model.
 
 ## SELECTED MODEL: mod2_nb
@@ -113,99 +111,8 @@ mod1_p$deviance / mod1_p$df.residual
 
 
 tab_model(mod2_nb,
-          title = "Supplementary table 1: Negative binomial GLM estimates for factors associated with return-to-play incidence. Incidence rate ratios (IRR) with 95% confidence intervals (CI) and p-values are presented for each covariate.",
-          file = paste0(tab_path, "Supp_Tab1.html"))
+          title = "Supplementary table 2: Negative binomial GLM estimates for factors associated with return-to-play incidence. Incidence rate ratios (IRR) with 95% confidence intervals (CI) and p-values are presented for each covariate.",
+          file = paste0(tab_path, "Supp_Tab2.html"))
 
 
-# STable 2 ----------------------------------------------------------------
-# my_descrGroup <- function(data, comp_var = NULL) {
-#   data |> 
-#     group_by(Grupo, {{comp_var}}) |> 
-#     summarise(N = n(),
-#               `Mean (RTP)` = round(mean(RTP), 1),
-#               `Median (RTP)` = median(RTP),
-#               `Median (RTP)` = paste0(`Median (RTP)`, " (", quantile(RTP, 0.75) - quantile(RTP, 0.25), ")")) |> ## with IQR
-#     ungroup() |> 
-#     pivot_wider(id_cols = {{comp_var}},
-#                 names_from = Grupo,
-#                 values_from = c("N", "Mean (RTP)", "Median (RTP)")) |> 
-#     dplyr::select({{comp_var}}, ends_with("_Group 1"), ends_with("_Group 2"), ends_with("Group 3"))
-# }
-# 
-# ## total
-# stab2_1 <- my_descrGroup(tjunction) |> 
-#   mutate(Variable = "RTP Total") |> 
-#   dplyr::select(Variable, everything())
-# tjunction |> 
-#   group_by(Grupo) |> 
-#   shapiro_test(RTP)
-# kruskal_test(data = tjunction, RTP ~ Grupo)
-# stab2_1 <- stab2_1 |> 
-#   mutate(p_value = round(kruskal_test(data = tjunction, RTP ~ Grupo)$p, 3))
-# 
-# ## reinjury
-# stab2_2 <- my_descrGroup(tjunction, Reinjury) |> 
-#   rename(Variable = "Reinjury")
-# tjunction |> 
-#   filter(Reinjury == "Yes") |> 
-#   group_by(Grupo) |> 
-#   shapiro_test(RTP)
-# anova_test(tjunction |> filter(Reinjury == "Yes"), RTP ~ Grupo)
-# tjunction |> 
-#   filter(Reinjury == "No") |> 
-#   group_by(Grupo) |> 
-#   shapiro_test(RTP)
-# kruskal_test(tjunction |> filter(Reinjury == "No"), RTP ~ Grupo)
-# stab2_2 <- stab2_2 |> 
-#   mutate(p_value = c(
-#     round(anova_test(data = tjunction |> dplyr::filter(Reinjury == "Yes"), 
-#                        RTP ~ Grupo)$p, 3),
-#     round(kruskal_test(data = tjunction |> dplyr::filter(Reinjury == "No"), 
-#                                       RTP ~ Grupo)$p, 3)
-#     )
-#     )
-# 
-# ## type of injury
-# stab2_3 <- my_descrGroup(tjunction, Type_injury_letter) |> 
-#   rename(Variable = "Type_injury_letter")
-# tjunction |> 
-#   filter(Type_injury_letter == "A") |> 
-#   group_by(Grupo) |> 
-#   shapiro_test(RTP)
-# anova_test(tjunction |> filter(Type_injury_letter == "A"), RTP ~ Grupo)
-# tjunction |> 
-#   filter(Type_injury_letter == "AB") |> 
-#   group_by(Grupo) |> 
-#   shapiro_test(RTP)
-# anova_test(tjunction |> filter(Type_injury_letter == "AB"), RTP ~ Grupo)
-# tjunction |> 
-#   filter(Type_injury_letter == "B") |> 
-#   group_by(Grupo) |> 
-#   shapiro_test(RTP)
-# kruskal_test(tjunction |> filter(Type_injury_letter == "B"), RTP ~ Grupo)
-# stab2_3 <- stab2_3 |> 
-#   mutate(p_value = c(
-#     round(anova_test(data = tjunction |> dplyr::filter(Type_injury_letter == "A"), 
-#                      RTP ~ Grupo)$p, 3),
-#     round(anova_test(data = tjunction |> dplyr::filter(Type_injury_letter == "AB"), 
-#                      RTP ~ Grupo)$p, 3),
-#     round(kruskal_test(data = tjunction |> dplyr::filter(Type_injury_letter == "B"), 
-#                        RTP ~ Grupo)$p, 3)
-#   )
-#   )
-# 
-# 
-# ## combine these tables
-# stable2 <- bind_rows(stab2_1,
-#                      stab2_2,
-#                      stab2_3) |> 
-#   flextable() |> 
-#   fontsize(size = 8, part = "all") |> 
-#   set_caption("Supplementary table 2: Comparative data across the three cohorts within the institutional network.")
-# 
-# ## Save to Word document
-# doc <- read_docx() |>
-#   body_add_flextable(stable2) 
-# 
-# print(doc, target = paste0(tab_path, "Supp_Table2.docx"))
 
