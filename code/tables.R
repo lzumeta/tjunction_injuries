@@ -23,9 +23,9 @@ if (!dir.exists(tab_path)) dir.create(tab_path, recursive = T)
 
 
 
-# Table 1 -----------------------------------------------------------------
+# Table 2 -----------------------------------------------------------------
 vars_participant <- c("EDAT", "Position")
-vars_injury     <- c("Affected_limb", "Affected_dominant_leg")
+vars_injury      <- c("Affected_limb", "Affected_dominant_leg")
 
 ## function for generating descr table
 mydescrTable_total <- function(data, var) {
@@ -95,17 +95,17 @@ ft <- flextable(final_table) |>
   width(j = 1, width = 3.5) |>
   width(j = 2, width = 1.5) |>
   # Add caption
-  set_caption("Table 1: Characteristics of study participants. Continuous variables are presented as mean ± standard deviation and categorical variables as absolute frequencies (percentages %).")
+  set_caption("Table 2: Characteristics of study participants. Continuous variables are presented as mean ± standard deviation and categorical variables as absolute frequencies (percentages %).")
 
 ## Save to Word document
 doc <- read_docx() |>
   body_add_flextable(ft)
 
-print(doc, target = paste0(tab_path, "Table1.docx"))
+print(doc, target = paste0(tab_path, "Table2.docx"))
 
 
 
-# Table 2 -----------------------------------------------------------------
+# Table 3 -----------------------------------------------------------------
 my_injuryDescr <- function(data, injury_var) {
   data |> 
     summarise(
@@ -138,17 +138,17 @@ table2 <- bind_rows(tab2_0, tab2_1, tab2_2) |>
   slice(1, 4, 9, 11, 8, 10, 3, 7, 6, 5) |>  ## watch out (this is very manual)  
   select(-Mean, -Mean_CI) |> 
   flextable() |> 
-  set_caption("Table 2: Descriptive statistics regarding return-to-play in days.")
+  set_caption("Table 3: Descriptive statistics regarding return-to-play in days.")
 
 ## Save to Word document
 doc <- read_docx() |>
   body_add_flextable(table2)
 
-print(doc, target = paste0(tab_path, "Table2.docx"))
+print(doc, target = paste0(tab_path, "Table3.docx"))
 
 
 
-# Table 3 -----------------------------------------------------------------
+# Table 4 -----------------------------------------------------------------
 
 my_injComp <- function(data, comp_var) {
   tab0 <- data |> 
@@ -200,17 +200,17 @@ table3 <- bind_rows(tab3_1,
                     tab3_3,
                     tab3_4) |> 
   flextable() |> 
-  set_caption("Table 3: Pairwise comparisons of return-to-play outcomes by injury location and other characteristics. For each comparison, the median difference in return-to-play (days) with 95% confidence interval, Mann-Whitney U statistic, the Wilcoxon r effect size and adjusted p-values are reported.")
+  set_caption("Table 4: Pairwise comparisons of return-to-play outcomes by injury location and other characteristics. For each comparison, the Hodges–Lehmann estimate of the between-group difference in RTP (days) with 95% confidence interval, Mann-Whitney U statistic, the Wilcoxon r effect size and adjusted p-values are reported.")
 
 ## Save to Word document
 doc <- read_docx() |>
   body_add_flextable(table3)
 
-print(doc, target = paste0(tab_path, "Table3.docx"))
+print(doc, target = paste0(tab_path, "Table4.docx"))
 
 
 
-# Table 4 -----------------------------------------------------------------
+# Table 5 -----------------------------------------------------------------
 
 tjunction |> 
   group_by(Type_injury3) |> 
@@ -236,12 +236,12 @@ tab4 <- tjunction |>
 
 table4 <- tab4 |> 
   flextable() |> 
-  set_caption("Table 4: Pairwise comparisons of return-to-play outcomes by injury sublocation. For each comparison, the median difference in return-to-play (days) with 95% confidence interval, Mann-Whitney U statistic, the Wilcoxon r effect size and adjusted p-values are reported.")
+  set_caption("Table 5: Pairwise comparisons of return-to-play outcomes by injury sublocation. For each comparison, the Hodges–Lehmann estimate of the between-group difference in RTP (days) with 95% confidence interval, Mann-Whitney U statistic, the Wilcoxon r effect size and adjusted p-values are reported.")
 
 ## Save to Word document
 doc <- read_docx() |>
   body_add_flextable(table4)
 
-print(doc, target = paste0(tab_path, "Table4.docx"))
+print(doc, target = paste0(tab_path, "Table5.docx"))
 
 
