@@ -5,3 +5,5 @@
 *.Rproj
 
 *data
+
+code/checks.R
