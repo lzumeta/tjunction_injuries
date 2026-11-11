@@ -49,7 +49,14 @@ modback_nb <- stepAIC(mod1_nb,
 mod2_nb <- glm.nb(RTP ~ Type_injury_letter + Cap_curt_biceps + Aponeurosis,
                   data = tjunction)
 summary(mod2_nb)
+AIC(mod2_nb)
 performance::r2_nagelkerke(mod2_nb)
+performance::r2(mod2_nb)
+performance::r2_mcfadden(mod2_nb)
+null_model <- glm.nb(RTP ~ 1,
+                     data = tjunction,
+                     init.theta = mod2_nb$theta)
+(r2_dev <- 1 - mod2_nb$deviance/mod2_nb$null.deviance)
 
 ## Model comparison in terms of goodness of fit measures
 models <- list("Poisson BIG model" = mod1_p,
