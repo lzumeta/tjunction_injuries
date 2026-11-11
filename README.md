@@ -1,12 +1,10 @@
 # README
 
-This is the acompanying code repository for the research paper:
+This is the accompanying code repository for the research paper:
 
-*"papers_title"* 
+*Connective Tissue Involvement and Return-to-Play Duration in Distal Biceps Femoris T-Junction Injuries: A Retrospective Cohort Study in Professional Football* 
 
-published in the "journals_name" "[link_doi]".
-
-The aim is to "to_write". 
+The aim of this study was to investigate the associatios between patterns of connective-tissue involvement defined by magnetic resonance imaging and return-to-play (RTP) duration in professional football players with distal biceps femoris T-junction injuries. 
 
 ## Session info
 The R session information is given below:
