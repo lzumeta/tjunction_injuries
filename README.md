@@ -2,9 +2,9 @@
 
 This is the accompanying code repository for the research paper:
 
-*Connective Tissue Involvement and Return-to-Play Duration in Distal Biceps Femoris T-Junction Injuries: A Retrospective Cohort Study in Professional Football* 
+**Connective Tissue Involvement and Return-to-Play Duration in Distal Biceps Femoris T-Junction Injuries: A Retrospective Cohort Study in Professional Football** 
 
-The aim of this study was to investigate the associatios between patterns of connective-tissue involvement defined by magnetic resonance imaging and return-to-play (RTP) duration in professional football players with distal biceps femoris T-junction injuries. 
+The aim of this study was to investigate the associations between patterns of connective-tissue involvement defined by magnetic resonance imaging (MRI) and return-to-play (RTP) duration in professional football players with distal biceps femoris T-junction injuries. 
 
 ## Session info
 The R session information is given below:
