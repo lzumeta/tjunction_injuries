@@ -198,7 +198,8 @@ tab3_4 <- tjunction |>
 table3 <- bind_rows(tab3_1,
                     tab3_2,
                     tab3_3,
-                    tab3_4) |> 
+                    tab3_4, .id = "Comparison") |>
+  mutate(Comparison = c(rep("Injury location", 3), "Reinjury", "Short head biceps affected", "Aponeurosis")) |> 
   flextable() |> 
   set_caption("Table 4: Pairwise comparisons of return-to-play outcomes by injury location and other characteristics. For each comparison, the Hodges–Lehmann estimate of the between-group difference in RTP (days) with 95% confidence interval, Mann-Whitney U statistic, the Wilcoxon r effect size and adjusted p-values are reported.")
 
